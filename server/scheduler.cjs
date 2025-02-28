@@ -8,8 +8,70 @@ const TELEGRAM_CHANNEL_ID = '@doitforsteff';
 const TELEGRAM_API_URL = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}`;
 const RSS_FEED_URL = 'https://rss.app/feeds/_Fb15tVVZjtF15HN3.xml';
 
+const OPENAI_API_KEY = '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';
+const DEEPAI_API_KEY = '8a63f25a-8d9e-45cd-a45e-5c7c75200588';
+const DEEPAI_API_URL = 'https://api.deepai.org/api/text2img';
+
 let currentArticles = [];
 let currentArticleIndex = 0;
+
+async function generateMiniPost(title) {
+  try {
+    const response = await axios.post(
+      'https://api.openai.com/v1/chat/completions',
+      {
+        model: 'gpt-4o-mini',
+        messages: [
+          {
+            role: 'user',
+            content: `Create a mini post about this article (max 1200 characters). Follow these formatting rules strictly:
+1. Use single emojis only, no duplicate emojis
+2. Keep paragraphs short (2-3 sentences max)
+3. Use at most 3 emojis in total
+4. Place emoji at the start of relevant paragraph only
+5. Each paragraph must be separated by a blank line
+6. No extra line breaks allowed
+
+Title: ${title}`
+          }
+        ],
+        temperature: 1,
+        max_tokens: 800
+      },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${OPENAI_API_KEY}`
+        }
+      }
+    );
+    
+    return response.data.choices[0]?.message?.content?.trim() || '';
+  } catch (error) {
+    console.error('Error generating mini post:', error);
+    return '';
+  }
+}
+
+async function generateImage(title) {
+  try {
+    const response = await axios.post(
+      DEEPAI_API_URL,
+      { text: title },
+      {
+        headers: {
+          'api-key': DEEPAI_API_KEY,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+
+    return response.data.output_url;
+  } catch (error) {
+    console.error('Error generating image:', error);
+    return undefined;
+  }
+}
 
 async function fetchArticles() {
   try {
@@ -29,6 +91,11 @@ async function fetchArticles() {
       const title = $item.find('title').first().text().trim();
       const content = $item.find('description').first().text().trim();
       const image = $item.find('media\\:content, enclosure').attr('url') ||
+                   // Try to generate an image if none exists
+                   await generateImage(title);
+      
+      // Generate mini post for the article
+      const miniPost = await generateMiniPost(title);
                    $('img', content).first().attr('src');
 
       if (title) {
@@ -86,7 +153,15 @@ async function postNextArticle() {
     console.log(`📝 Posting article ${currentArticleIndex + 1} of ${currentArticles.length}`);
     console.log(`📌 Title: ${article.title}`);
     
-    const text = `<b>${article.title}</b>\n\n${article.content}`;
+    // Generate content if not already present
+    if (!article.miniPost) {
+      article.miniPost = await generateMiniPost(article.title);
+    }
+    if (!article.image) {
+      article.image = await generateImage(article.title);
+    }
+    
+    const text = `<b>${article.title}</b>\n\n${article.miniPost || article.content}`;
     const success = await sendToTelegram(text, article.image);
     
     if (success) {
@@ -101,25 +176,25 @@ async function postNextArticle() {
 // Schedule posts at specific times (Bali time - UTC+8)
 console.log('🚀 Starting scheduler service...');
 
-// Post at 19:30
-cron.schedule('30 19 * * *', async () => {
-  console.log('⏰ Executing scheduled post at 19:30');
+// Post at 19:37
+cron.schedule('37 19 * * *', async () => {
+  console.log('⏰ Executing scheduled post at 19:37');
   await postNextArticle();
 }, {
   timezone: "Asia/Makassar"
 });
 
-// Post at 19:33
-cron.schedule('33 19 * * *', async () => {
-  console.log('⏰ Executing scheduled post at 19:33');
+// Post at 19:40
+cron.schedule('40 19 * * *', async () => {
+  console.log('⏰ Executing scheduled post at 19:40');
   await postNextArticle();
 }, {
   timezone: "Asia/Makassar"
 });
 
-// Post at 19:35
-cron.schedule('35 19 * * *', async () => {
-  console.log('⏰ Executing scheduled post at 19:35');
+// Post at 19:43
+cron.schedule('43 19 * * *', async () => {
+  console.log('⏰ Executing scheduled post at 19:43');
   await postNextArticle();
 }, {
   timezone: "Asia/Makassar"
