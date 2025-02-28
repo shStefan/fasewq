@@ -98,35 +98,28 @@ async function postNextArticle() {
   }
 }
 
-async function refreshArticles() {
-  console.log('🔄 Starting articles refresh...');
-  currentArticles = await fetchArticles();
-  currentArticleIndex = 0;
-  console.log('✅ Articles refreshed');
-}
-
 // Schedule posts at specific times (Bali time - UTC+8)
 console.log('🚀 Starting scheduler service...');
 
-// Post at 14:10
-cron.schedule('10 14 * * *', async () => {
-  console.log('⏰ Executing scheduled post at 14:10');
+// Post at 19:30
+cron.schedule('30 19 * * *', async () => {
+  console.log('⏰ Executing scheduled post at 19:30');
   await postNextArticle();
 }, {
   timezone: "Asia/Makassar"
 });
 
-// Post at 14:13
-cron.schedule('13 14 * * *', async () => {
-  console.log('⏰ Executing scheduled post at 14:13');
+// Post at 19:33
+cron.schedule('33 19 * * *', async () => {
+  console.log('⏰ Executing scheduled post at 19:33');
   await postNextArticle();
 }, {
   timezone: "Asia/Makassar"
 });
 
-// Post at 14:15
-cron.schedule('15 14 * * *', async () => {
-  console.log('⏰ Executing scheduled post at 14:15');
+// Post at 19:35
+cron.schedule('35 19 * * *', async () => {
+  console.log('⏰ Executing scheduled post at 19:35');
   await postNextArticle();
 }, {
   timezone: "Asia/Makassar"
