@@ -1,0 +1,17 @@
+{
+  "name": "telegram-scheduler-service",
+  "version": "1.0.0",
+  "private": true,
+  "main": "scheduler.cjs",
+  "scripts": {
+    "start": "node scheduler.cjs"
+  },
+  "dependencies": {
+    "node-cron": "^3.0.3",
+    "axios": "^1.6.7",
+    "cheerio": "1.0.0-rc.12"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
